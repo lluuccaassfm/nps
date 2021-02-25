@@ -42,7 +42,8 @@ class SendMailController {
 
     // Verifica se já enviou algum email para o usuário 
     const surveyUserAlreadExist = await surveysUsersRepository.findOne({
-      where: [{user_id: user.id}, {value: null}]
+      where: [{user_id: user.id}, {value: null}],
+      relations: ["user", "survey"]
     });
     if(surveyUserAlreadExist){
       await SendMailService.execute(email, survey.title, variables, npsPath);
