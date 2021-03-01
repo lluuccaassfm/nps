@@ -1,0 +1,170 @@
+Criando API Node com TypeScript
+
+**** aula 01 ****
+
+No terminal da pasta do projeto
+- $ yarn init -y (cria o projeto - package.json)
+
+- $ yarn add express (adiciona dependência necessária para projeto Node)
+
+- cria arquivo server.ts para configurar o servidor da aplicação
+
+- $ yarn add @types/express -D (adiciona dependência necessária para o ambiente de desenvolvimento)
+
+- $ yarn add typescript -D (adiciona dependência typescript)
+
+- $ yarn tsc --init (inicia o typescript dentro da aplicação - cria arquivo tsconfig.json)
+
+- No arquivo tsconfig.json altera "strict" para "false"
+
+- yarn add ts-node-dev -D (adiciona dependência para converter código para typescript em tempo de execução)
+
+- adiciona ''' "scripts": {
+    "dev":"ts-node-dev --transpile-only --ignore-watch node_modules src/server.ts"
+  }, ''' no arquivo package.json
+
+- $ yarn dev (roda aplicação)
+
+**** aula 02 (BD) ****
+
+- $ yarn add typeorm reflect-metadata (instala type ORM)
+
+- $ yarn add sqlite3
+
+- cria arquivo ormconfig.json ''' 
+	{ "type": "sqlite",
+	  "database": "./src/database/database.sqlite"
+	}
+	'''
+- cria diretorio "database" e arquivo index.ts (dentro de database)
+
+- adiciona imports no arquivo server.ts : ''' import "reflect-metadata";
+import "./database"; '''
+
+- Adiciona script no arquivo package.json: '''
+ "typeorm": "ts-node-dev node_modules/typeorm/cli.js"
+''' para executar as migrations com $ yarm typeorm
+
+- Cria pasta "migrations" dentro da pasta "database"
+
+- Adiciona '''   "cli": {
+    "migrationsDir": "./src/database/migrations"
+  } ''' no arquivo ormconfig.json para que ao rodar o comando das migrations os arquivos sejam criados no caminho especificado 
+
+- $ yarn typeorm migration:create -n CreateUsers 
+
+- adiicona ''' "migrations": ["./src/database/migrations/**.ts"], ''' no arquivo ormconfig.json
+
+- $ yarn typeorm migration:run (para executar as migrations)  
+
+- cria pasta de controllers
+
+- cria arquivo para rotas
+
+- cria pasta para Models
+
+- Altera arquivo tsconfig.json: 
+	- "strictPropertyInitialization": false,
+	- "experimentalDecorators": true
+	- "emitDecoratorMetadata": true, 
+ 
+- $ yarn add uuid (adiciona bibliioteca para geração do ID)
+- $ yarn add @types/uuid -D
+
+- configura Model com atributos corretos
+
+- configura controller, adicionando o repository
+
+- adiciona ''' "entities": ["./src/models/**.ts"] , ''' no arquivo ormconfig.json para saber dizer onde estão as entidades
+
+- adiciona ''' "logging" : true , ''' no arquivo ormconfig.json para ativar logs de SQL com o banco 
+
+***** aula 03 *****
+
+- Cria pasta específica para repository
+
+- $ yarn typeorm migration:create -n CreateSurveys (cria migration para nova tabela) 
+
+- Edita migration para criar tabela "surveys"
+
+- Cria model, controller, repository e rota para criar e exibir "survey"
+
+*** Inicia configuração para realização de testes ***
+
+- $ yarn add jest @types/jest -D (adiciona dependência)
+
+- $ yarn jest --init (inicia configuração do arquivo de teste)
+
+- no arquivo "jest.config.ts" deixar "bail: true" 
+- no arquivo "jest.congig.ts" habilitar "testMatch" e altera-lo para "testMatch: [
+    "**/__tests__/**/*.test.ts"
+  ],"
+
+- Cria arquivo de teste em uma pasta "__tests__"
+- $ yarn add ts-jest -D (para trabalhar com TypeScrit nos testes
+- no arquivo "jest.config.ts" habilitar campo "preset" e altera-lo para ''' preset: "ts-jest" '''
+- $ yarn add supertest @types/supertest -D (adiicona o "supertest" na aplicação)
+
+- cria "app.ts", separando o "server.ts"
+- configura arquivo "Users.test.ts"
+- configura banco de test
+	1- altera arquivo "index.ts" dentro da pasta de "database"
+	2- adiciona método que cria conexão, no arquivo "app.ts"
+
+- Adiciona variável de ambiente, no arquivo "package.json" em "scripts" edita "tests" acrescentando NODE_ENV=test 
+
+- No arquivo "pacakge.json" em "scripts" adiciona ''' "posttest": "rm ./src/database/database.test.sqlite" '''
+
+- $ yarn test (para executar o teste)
+
+***** aula 04 *****
+
+- $ yarn typeorm migration:create -n CreateSurveysUsers (cria migration para nova tabela)
+
+- Cria model, repository, controller e rota para nova tabela referente ao envio de email
+
+- Para o serviço de envio de email vamos utilizar o "Nodemailer", juntamento com o servidor SMTP fake "Ethereal"
+
+- $ yarn add nodemailer (adciona o nodemailer na aplicação)
+
+- Cria pasta "services" para gerenciar todos os serviços de email
+
+- Na pasta "services" cria arquivo "SendMailService.ts" e configura métodos para envio de email baseado no "ethereal.email"
+
+- No "SendMailController.ts" chamar método para enviar email
+
+- Estilizar descrição/body do email com "Handlebars"
+
+- $ yarn add handlebars (para adicionar handlebars na aplicação)
+
+- Cria pasta "views/emails" e dentro adiciona o arquivo "npsMail.hbs"
+
+- O arquivo com extensão ".hbs" (handlerbars) aceita HTML 
+
+- configura "SendMailService.ts" para receber o "npsMail.hbs"
+
+- Adiciona mapeamento de relacionamento na model "SurveyUser"
+
+***** aula 05 *****
+
+- Cria controller "AnswerController.ts" para serviço de recebimento das respostas do e-mail
+- Cria rota para recebimento das respstas no "routes.ts"
+- Cria controller "NpsController.ts" para serviço de calcular o nps
+- Criar rota para cahamr o serviço para calcular nps no "routes.ts"
+
+# Criar Valdações
+- $ yarn add yup (adiciona biblioteca para validações)
+- Adiciona validações em "UsersController.ts"
+
+#Melhoria teste
+- Em "package.json" - scripts, retira "posttest" e altera "test" acrescentando o "-i"
+- Adiciona método afterAll() nas classes de teste
+
+#Melhoria Controller-Erro
+- Cria pasta "errors" com arquivo "AppError.ts"
+- Adiciona "throw new AppError("mensagem de erro");" nos retornos de erro dos controllers
+- Implementa verificação no "app.ts"
+- $ yarn add express-async-errors (Adiciona biblioteca para validar erros)
+- adiciona 'import "express-async-errors"' no "app.ts";
+ 
+
